@@ -18,13 +18,24 @@ package StarterRedigo
 
 import (
 	"github.com/go-spring/spring-core/gs"
-	"github.com/go-spring/spring-core/gs/cond"
-	"github.com/go-spring/spring-core/redis"
-	"github.com/go-spring/spring-redigo"
+	"github.com/gomodule/redigo/redis"
 )
 
+type Config struct {
+	Addr     string `value:"${addr}"`
+	Password string `value:"${password:=}"`
+}
+
 func init() {
-	gs.Provide(SpringRedigo.NewClient, "${redis}").
-		Name("RedisClient").
-		On(cond.OnMissingBean(gs.BeanID((*redis.Client)(nil), "RedisClient")))
+	gs.Group("spring.redigo",
+		func(c Config) (*redis.Pool, error) { // init
+			return &redis.Pool{
+				Dial: func() (redis.Conn, error) {
+					return redis.Dial("tcp", c.Addr, redis.DialPassword(c.Password))
+				},
+			}, nil
+		},
+		func(pool *redis.Pool) error { // destroy
+			return pool.Close()
+		})
 }

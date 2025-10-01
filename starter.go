@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2025 The Go-Spring Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ type Config struct {
 }
 
 func init() {
-	gs.Group("spring.redigo",
+	gs.Group("${spring.redigo}",
 		func(c Config) (*redis.Pool, error) { // init
 			return &redis.Pool{
 				Dial: func() (redis.Conn, error) {

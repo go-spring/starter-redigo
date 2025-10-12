@@ -56,3 +56,5 @@ str, err := s.Redis.Set(r.Context(), "key", "value", 0).Result()
 
 * **Supports multiple Redis instances**: You can define multiple Redis instances in the configuration file and reference
   them by name in your project.
+* **Support Redis extensions**: You can extend Redis functionality by implementing the `Driver` interface — see the
+  example implementation `AnotherRedisDriver`.

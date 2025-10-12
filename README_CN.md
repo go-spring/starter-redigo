@@ -55,3 +55,4 @@ str, err := s.Redis.Set(r.Context(), "key", "value", 0).Result()
 ## 高级功能
 
 * **支持多 Redis 实例**：可以在配置文件中定义多个 Redis 实例，并在项目中使用 name 进行引用。
+* **支持 Redis 扩展**：可以通过实现 `Driver` 接口来扩展 Redis 功能，参见示例中的 `AnotherRedisDriver` 实现。

@@ -17,29 +17,50 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
 
+	"github.com/go-spring/log"
 	"github.com/go-spring/spring-core/gs"
 	"github.com/gomodule/redigo/redis"
 
-	_ "github.com/go-spring/starter-redigo"
+	StarterRedigo "github.com/go-spring/starter-redigo"
 )
+
+func init() {
+	StarterRedigo.RegisterDriver("AnotherRedisDriver", &AnotherRedisDriver{})
+}
+
+// AnotherRedisDriver is a custom implementation of the Driver interface.
+type AnotherRedisDriver struct{}
+
+func (AnotherRedisDriver) CreateClient(c StarterRedigo.Config) (*redis.Pool, error) {
+	log.Infof(context.Background(), log.TagAppDef, "AnotherRedisDriver::CreateClient")
+	return &redis.Pool{
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", c.Addr, redis.DialPassword(c.Password))
+		},
+	}, nil
+}
 
 type Service struct {
 	Redis *redis.Pool `autowire:""`
 }
 
 func main() {
+	// You can change the `driver` property in the configuration file
+	// and check the used Redis driver via logs.
 
 	// Here `s` is not referenced by any other object,
 	// so we need to register it as a root object.
 	s := &Service{}
 	gs.Root(gs.Object(s))
 
+	// Define a handler to GET a Redis key value.
 	http.HandleFunc("/get", func(w http.ResponseWriter, r *http.Request) {
 		c := s.Redis.Get()
 		defer func() { _ = c.Close() }()
@@ -51,6 +72,7 @@ func main() {
 		_, _ = w.Write([]byte(str))
 	})
 
+	// Define a handler to SET a Redis key value.
 	http.HandleFunc("/set", func(w http.ResponseWriter, r *http.Request) {
 		c := s.Redis.Get()
 		defer func() { _ = c.Close() }()
